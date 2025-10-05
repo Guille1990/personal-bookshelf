@@ -5,14 +5,15 @@ import "gorm.io/gorm"
 type User struct {
 	gorm.Model
 	Username     string `gorm:"unique"`
-	Email        string `gorm:unique`
-	PasswordHash []Item
+	Email        string `gorm:"unique"`
+	PasswordHash string
+	Items        []Item
 }
 
 type Tag struct {
 	gorm.Model
 	Name  string `gorm:"unique"`
-	Items []Item `many2many:item_tags`
+	Items []Item `gorm:"many2many:item_tags"`
 }
 
 type Item struct {
