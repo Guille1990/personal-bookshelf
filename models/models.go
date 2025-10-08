@@ -12,7 +12,7 @@ type User struct {
 
 type Tag struct {
 	gorm.Model
-	Name  string `gorm:"unique"`
+	Name  string `gorm:"unique" json:"name"`
 	Items []Item `gorm:"many2many:item_tags"`
 }
 

@@ -24,6 +24,15 @@ func CreateItem(c *gin.Context) {
 		return
 	}
 
+	// si vienen tags, asociarlas
+	if len(input.Tags) > 0 {
+		var tags []models.Tag
+		for _, t := range input.Tags {
+			tags = append(tags, models.Tag{Name: t.Name})
+		}
+		config.DB.Model(&input).Association("Tags").Replace(&tags)
+	}
+
 	c.JSON(http.StatusCreated, input)
 }
 
@@ -51,11 +60,20 @@ func UpdateItems(c *gin.Context) {
 
 	var input models.Item
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Datos inválidos"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Datos inválidos", "details": err.Error()})
 		return
 	}
 
 	config.DB.Model(&item).Updates(input)
+
+	if len(input.Tags) > 0 {
+		var tags []models.Tag
+		for _, t := range input.Tags {
+			tags = append(tags, models.Tag{Name: t.Name})
+		}
+		config.DB.Model(&item).Association("Tags").Replace(&tags)
+	}
+
 	c.JSON(http.StatusOK, item)
 }
 
@@ -69,6 +87,7 @@ func DeleteItems(c *gin.Context) {
 		return
 	}
 
+	config.DB.Model(&item).Association("Tags").Clear()
 	config.DB.Delete(&item)
 	c.JSON(http.StatusOK, gin.H{"message": "Ítem eliminado exitosamente"})
 }
