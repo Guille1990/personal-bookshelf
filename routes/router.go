@@ -17,8 +17,10 @@ func SetupRouter() *gin.Engine {
 	{
 		authItem.POST("/", controllers.CreateItem)
 		authItem.GET("/", controllers.GetItems)
+		authItem.GET("/:id", controllers.GetItemByID)
 		authItem.PUT("/:id", controllers.UpdateItems)
 		authItem.DELETE("/:id", controllers.DeleteItems)
+		authItem.GET("/filter", controllers.FilterItemsByTags)
 	}
 
 	authTag := r.Group("/tags")
@@ -26,6 +28,7 @@ func SetupRouter() *gin.Engine {
 	{
 		authTag.POST("/", controllers.CreateTag)
 		authTag.GET("/", controllers.GetTags)
+		authTag.GET("/:id/items", controllers.GetItemsByTag)
 	}
 
 	return r

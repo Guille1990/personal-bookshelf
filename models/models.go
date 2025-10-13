@@ -31,7 +31,7 @@ type Item struct {
 	Tags            []Tag  `gorm:"many2many:item_tags" json:"tags"`
 }
 
-type ItemTag struct {
+type ItemTags struct {
 	ItemID uint
 	TagID  uint
 }
