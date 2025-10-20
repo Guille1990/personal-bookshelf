@@ -1,0 +1,194 @@
+<div class="library-container">
+  <!-- Header -->
+  <header class="library-header">
+    <div class="header-left">
+      <h1>Mi Biblioteca</h1>
+      <p *ngIf="currentUser">Bienvenido, {{ currentUser.username }}</p>
+    </div>
+    <div class="header-right">
+      <button class="btn-secondary" (click)="forceRefresh()">🔄 Refresh</button>
+      <button class="btn-secondary" (click)="goToDashboard()">Dashboard</button>
+      <button class="btn-danger" (click)="logout()">Cerrar Sesión</button>
+    </div>
+  </header>
+
+  <!-- Estadísticas rápidas -->
+  <div class="stats-bar" *ngIf="!isLoading">
+    <div class="stat-item">
+      <span class="stat-number">{{ getStats().total }}</span>
+      <span class="stat-label">Total</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">{{ getStats().libros }}</span>
+      <span class="stat-label">Libros</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">{{ getStats().mangas }}</span>
+      <span class="stat-label">Mangas</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">{{ getStats().leyendo }}</span>
+      <span class="stat-label">Leyendo</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">{{ getStats().terminados }}</span>
+      <span class="stat-label">Terminados</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-number">{{ getStats().pendientes }}</span>
+      <span class="stat-label">Pendientes</span>
+    </div>
+  </div>
+
+  <!-- Controles -->
+  <div class="controls-section">
+    <!-- Filtros -->
+    <div class="filters-section">
+      <form [formGroup]="filterForm" class="filters-form">
+        <div class="filter-group">
+          <input type="text" formControlName="title" placeholder="Buscar por título..." class="filter-input">
+        </div>
+        <div class="filter-group">
+          <input type="text" formControlName="author" placeholder="Buscar por autor..." class="filter-input">
+        </div>
+        <div class="filter-group">
+          <select formControlName="type" class="filter-select">
+            <option value="">Todos los tipos</option>
+            <option value="Libro">Libros</option>
+            <option value="Manga">Mangas</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <select formControlName="status" class="filter-select">
+            <option value="">Todos los estados</option>
+            <option value="Leyendo">Leyendo</option>
+            <option value="Terminado">Terminado</option>
+            <option value="Pendiente">Pendiente</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <select formControlName="rating" class="filter-select">
+            <option value="">Todas las puntuaciones</option>
+            <option value="5">5 estrellas o más</option>
+            <option value="4">4 estrellas o más</option>
+            <option value="3">3 estrellas o más</option>
+            <option value="2">2 estrellas o más</option>
+            <option value="1">1 estrella o más</option>
+          </select>
+        </div>
+        <button type="button" class="btn-clear" (click)="clearFilters()">Limpiar</button>
+      </form>
+    </div>
+
+    <!-- Acciones principales -->
+    <div class="actions-section">
+      <button class="btn-primary" (click)="addNewItem()">
+        <span class="icon">+</span>
+        Agregar Libro/Manga
+      </button>
+      <button class="btn-secondary" (click)="toggleViewMode()">
+        <span class="icon">{{ viewMode === 'grid' ? '☰' : '⊞' }}</span>
+        {{ viewMode === 'grid' ? 'Lista' : 'Cuadrícula' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading" class="loading-section">
+    <div class="spinner"></div>
+    <p>Cargando biblioteca...</p>
+  </div>
+
+  <!-- Lista de items -->
+  <div *ngIf="!isLoading" class="items-section">
+    <!-- Sin items -->
+    <div *ngIf="filteredItems.length === 0 && items.length === 0" class="empty-state">
+      <div class="empty-icon">📚</div>
+      <h3>Tu biblioteca está vacía</h3>
+      <p>¡Agrega tu primer libro o manga para empezar!</p>
+      <button class="btn-primary" (click)="addNewItem()">Agregar Primer Item</button>
+    </div>
+
+    <!-- Sin resultados de filtro -->
+    <div *ngIf="filteredItems.length === 0 && items.length > 0" class="no-results">
+      <div class="empty-icon">🔍</div>
+      <h3>No se encontraron resultados</h3>
+      <p>Intenta ajustar los filtros de búsqueda</p>
+      <button class="btn-secondary" (click)="clearFilters()">Limpiar Filtros</button>
+    </div>
+
+    <!-- Vista de cuadrícula -->
+    <div *ngIf="filteredItems.length > 0 && viewMode === 'grid'" class="items-grid">
+      <div *ngFor="let item of filteredItems" class="item-card">
+        <div class="item-cover" (click)="viewItem(item)">
+          <img *ngIf="item.cover_url" [src]="item.cover_url" [alt]="item.title" class="cover-image">
+          <div *ngIf="!item.cover_url" class="cover-placeholder">
+            <span class="cover-icon">{{ item.type === 'Libro' ? '📖' : '📚' }}</span>
+          </div>
+          <div class="item-overlay">
+            <div class="item-type" [class]="'type-' + item.type.toLowerCase()">{{ item.type }}</div>
+            <div class="item-status" [style.background-color]="getStatusColor(item.status)">{{ item.status }}</div>
+          </div>
+        </div>
+        
+        <div class="item-info">
+          <h3 class="item-title" (click)="viewItem(item)">{{ item.title }}</h3>
+          <p class="item-author">{{ item.author }}</p>
+          <div class="item-rating">
+            <span *ngFor="let star of getStars(item.rating)" 
+                  class="star" 
+                  [class.filled]="star === 1">★</span>
+          </div>
+          <p class="item-genre">{{ item.genre }} • {{ item.publication_year }}</p>
+        </div>
+
+        <div class="item-actions">
+          <button class="action-btn" (click)="editItem(item)" title="Editar">✏️</button>
+          <button class="action-btn danger" (click)="deleteItem(item)" title="Eliminar">🗑️</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista de lista -->
+    <div *ngIf="filteredItems.length > 0 && viewMode === 'list'" class="items-list">
+      <div class="list-header">
+        <div class="col-cover"></div>
+        <div class="col-title">Título</div>
+        <div class="col-author">Autor</div>
+        <div class="col-type">Tipo</div>
+        <div class="col-status">Estado</div>
+        <div class="col-rating">Rating</div>
+        <div class="col-actions">Acciones</div>
+      </div>
+      
+      <div *ngFor="let item of filteredItems" class="list-item" (click)="viewItem(item)">
+        <div class="col-cover">
+          <img *ngIf="item.cover_url" [src]="item.cover_url" [alt]="item.title" class="list-cover">
+          <div *ngIf="!item.cover_url" class="list-cover-placeholder">
+            {{ item.type === 'Libro' ? '📖' : '📚' }}
+          </div>
+        </div>
+        <div class="col-title">
+          <strong>{{ item.title }}</strong>
+          <span class="item-year">{{ item.publication_year }}</span>
+        </div>
+        <div class="col-author">{{ item.author }}</div>
+        <div class="col-type">
+          <span class="type-badge" [class]="'type-' + item.type.toLowerCase()">{{ item.type }}</span>
+        </div>
+        <div class="col-status">
+          <span class="status-badge" [style.background-color]="getStatusColor(item.status)">{{ item.status }}</span>
+        </div>
+        <div class="col-rating">
+          <span *ngFor="let star of getStars(item.rating)" 
+                class="star small" 
+                [class.filled]="star === 1">★</span>
+        </div>
+        <div class="col-actions" (click)="$event.stopPropagation()">
+          <button class="action-btn small" (click)="editItem(item)">✏️</button>
+          <button class="action-btn small danger" (click)="deleteItem(item)">🗑️</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -9,26 +9,31 @@ import (
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 
-	r.POST("/register", controllers.Register)
-	r.POST("/login", controllers.Login)
+	r.Use(middleware.StaticFiles())
 
-	authItem := r.Group("/items")
-	authItem.Use(middleware.AuthMiddleware())
+	api := r.Group("/api")
 	{
-		authItem.POST("/", controllers.CreateItem)
-		authItem.GET("/", controllers.GetItems)
-		authItem.GET("/:id", controllers.GetItemByID)
-		authItem.PUT("/:id", controllers.UpdateItems)
-		authItem.DELETE("/:id", controllers.DeleteItems)
-		authItem.GET("/filter", controllers.FilterItemsByTags)
-	}
+		api.POST("/register", controllers.Register)
+		api.POST("/login", controllers.Login)
 
-	authTag := r.Group("/tags")
-	authTag.Use(middleware.AuthMiddleware())
-	{
-		authTag.POST("/", controllers.CreateTag)
-		authTag.GET("/", controllers.GetTags)
-		authTag.GET("/:id/items", controllers.GetItemsByTag)
+		authItem := api.Group("/items")
+		authItem.Use(middleware.AuthMiddleware())
+		{
+			authItem.POST("/", controllers.CreateItem)
+			authItem.GET("/", controllers.GetItems)
+			authItem.GET("/:id", controllers.GetItemByID)
+			authItem.PUT("/:id", controllers.UpdateItems)
+			authItem.DELETE("/:id", controllers.DeleteItems)
+			authItem.GET("/filter", controllers.FilterItemsByTags)
+		}
+
+		authTag := api.Group("/tags")
+		authTag.Use(middleware.AuthMiddleware())
+		{
+			authTag.POST("/", controllers.CreateTag)
+			authTag.GET("/", controllers.GetTags)
+			authTag.GET("/:id/items", controllers.GetItemsByTag)
+		}
 	}
 
 	return r

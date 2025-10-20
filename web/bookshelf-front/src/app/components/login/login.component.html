@@ -1,0 +1,76 @@
+<div class="login-container">
+  <div class="login-card">
+    <!-- Header -->
+    <div class="login-header">
+      <h2>Personal Bookshelf</h2>
+      <p>Inicia sesión para acceder a tu biblioteca</p>
+    </div>
+
+    <!-- Mostrar mensaje si ya está autenticado -->
+    <div *ngIf="isAuthenticated" class="authenticated-message">
+      <div class="alert alert-success">
+        <strong>¡Ya estás autenticado!</strong>
+        <p>Redirigiendo al dashboard...</p>
+      </div>
+    </div>
+
+    <!-- Formulario de login -->
+    <form *ngIf="!isAuthenticated" [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      
+      <!-- Campo Usuario -->
+      <div class="form-group">
+        <label for="username">Usuario</label>
+        <input 
+          type="text" 
+          id="username" 
+          formControlName="username"
+          class="form-control"
+          [class.error]="hasError('username')"
+          placeholder="Ingresa tu usuario"
+          autocomplete="username">
+        <div *ngIf="hasError('username')" class="error-message">
+          {{ getErrorMessage('username') }}
+        </div>
+      </div>
+
+      <!-- Campo Contraseña -->
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input 
+          type="password" 
+          id="password" 
+          formControlName="password"
+          class="form-control"
+          [class.error]="hasError('password')"
+          placeholder="Ingresa tu contraseña"
+          autocomplete="current-password">
+        <div *ngIf="hasError('password')" class="error-message">
+          {{ getErrorMessage('password') }}
+        </div>
+      </div>
+
+      <!-- Mensaje de error general -->
+      <div *ngIf="errorMessage" class="alert alert-error">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Botón de submit -->
+      <button 
+        type="submit" 
+        class="btn-primary"
+        [disabled]="isLoading || loginForm.invalid">
+        <span *ngIf="isLoading" class="spinner"></span>
+        {{ isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
+      </button>
+
+      <!-- Link a registro -->
+      <div class="form-footer">
+        <p>¿No tienes cuenta? 
+          <button type="button" class="link-button" (click)="goToRegister()">
+            Regístrate aquí
+          </button>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>
