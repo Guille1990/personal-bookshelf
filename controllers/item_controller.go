@@ -189,14 +189,32 @@ func DeleteItems(c *gin.Context) {
 	id := c.Param("id")
 
 	var item models.Item
-	if err := config.DB.Where("id = ? AND user_id = ?", id, userID).First(&item).Error; err != nil {
+	if err := config.DB.Preload("Tags").Where("id = ? AND user_id = ?", id, userID).First(&item).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Ítem no encontrado"})
 		return
 	}
 
-	config.DB.Model(&item).Association("Tags").Clear()
-	config.DB.Delete(&item)
-	c.JSON(http.StatusOK, gin.H{"message": "Ítem eliminado exitosamente"})
+	// Limpiar asociaciones de tags primero
+	if err := config.DB.Model(&item).Association("Tags").Clear(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al limpiar las etiquetas del ítem", "details": err.Error()})
+		return
+	}
+
+	// Eliminar el item
+	if err := config.DB.Delete(&item).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al eliminar el ítem", "details": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Ítem eliminado exitosamente",
+		"deleted_item": gin.H{
+			"id":     item.ID,
+			"title":  item.Title,
+			"author": item.Author,
+			"type":   item.Type,
+		},
+	})
 }
 
 func validateItemInput(input itemInput) map[string]interface{} {

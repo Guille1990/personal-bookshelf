@@ -13,7 +13,7 @@
   </header>
 
   <!-- Estadísticas rápidas -->
-  <div class="stats-bar" *ngIf="!isLoading">
+  <div class="stats-bar" *ngIf="!loading">
     <div class="stat-item">
       <span class="stat-number">{{ getStats().total }}</span>
       <span class="stat-label">Total</span>
@@ -94,13 +94,13 @@
   </div>
 
   <!-- Loading -->
-  <div *ngIf="isLoading" class="loading-section">
+  <div *ngIf="loading" class="loading-section">
     <div class="spinner"></div>
     <p>Cargando biblioteca...</p>
   </div>
 
   <!-- Lista de items -->
-  <div *ngIf="!isLoading" class="items-section">
+  <div *ngIf="!loading" class="items-section">
     <!-- Sin items -->
     <div *ngIf="filteredItems.length === 0 && items.length === 0" class="empty-state">
       <div class="empty-icon">📚</div>
@@ -192,3 +192,13 @@
     </div>
   </div>
 </div>
+
+<!-- Modal de confirmación para eliminar -->
+<app-confirm-delete-modal
+  *ngIf="showConfirmDeleteModal"
+  [isVisible]="showConfirmDeleteModal"
+  [itemTitle]="itemToDelete?.title || ''"
+  [isDeleting]="isDeleting"
+  (confirm)="confirmDelete()"
+  (cancel)="cancelDelete()">
+</app-confirm-delete-modal>

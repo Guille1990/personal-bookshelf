@@ -1,0 +1,51 @@
+<div class="modal-backdrop" *ngIf="isVisible" (click)="onBackdropClick($event)">
+  <div class="modal-content">
+    <!-- Header -->
+    <div class="modal-header">
+      <h2>Confirmar Eliminación</h2>
+      <button 
+        type="button" 
+        class="close-button" 
+        (click)="onCancel()"
+        [disabled]="isDeleting">
+        ×
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      <div class="warning-icon">
+        ⚠️
+      </div>
+      <h3>¿Estás seguro?</h3>
+      <p class="confirmation-text">
+        Esta acción eliminará permanentemente 
+        <strong>"{{ itemTitle }}"</strong>
+        <span *ngIf="itemType"> ({{ itemType }})</span> 
+        de tu biblioteca.
+      </p>
+      <p class="warning-text">
+        Esta acción no se puede deshacer.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button 
+        type="button" 
+        class="btn-cancel" 
+        (click)="onCancel()"
+        [disabled]="isDeleting">
+        Cancelar
+      </button>
+      <button 
+        type="button" 
+        class="btn-delete" 
+        (click)="onConfirm()"
+        [disabled]="isDeleting">
+        <span *ngIf="isDeleting" class="spinner"></span>
+        {{ isDeleting ? 'Eliminando...' : 'Sí, Eliminar' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -119,14 +119,19 @@ export class ItemService {
   /**
    * Eliminar item
    */
-  deleteItem(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/items/${id}`)
+  deleteItem(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.baseUrl}/items/${id}`)
       .pipe(
-        tap(() => {
+        tap((response) => {
+          console.log('Item eliminado:', response);
           // Actualizar la lista eliminando el item
           const currentItems = this.itemsSubject.value;
           const updatedItems = currentItems.filter(item => item.ID !== id);
           this.itemsSubject.next(updatedItems);
+        }),
+        catchError(error => {
+          console.error('Error eliminando item:', error);
+          throw error;
         })
       );
   }

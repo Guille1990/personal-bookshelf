@@ -7,28 +7,32 @@ import { Subject, takeUntil, combineLatest } from 'rxjs';
 import { ItemService } from '../../services/item.service';
 import { AuthService } from '../../services/auth.service';
 import { Item, ItemFilters, Tag } from '../../models/item.model';
+import { ConfirmDeleteModalComponent } from '../confirm-delete-modal/confirm-delete-modal.component';
 
 @Component({
   selector: 'app-library',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ConfirmDeleteModalComponent],
   templateUrl: './library.component.html',
-  styleUrls: ['./library.component.css']
+  styleUrl: './library.component.css'
 })
 export class LibraryComponent implements OnInit, OnDestroy {
   items: Item[] = [];
   filteredItems: Item[] = [];
   tags: Tag[] = [];
-  isLoading = false;
-  currentUser: any = null;
-  
-  // Formulario de filtros
+  searchTerm: string = '';
+  sortBy: string = 'created_at';
+  sortDirection: string = 'desc';
+  selectedTag: string = '';
+  loading: boolean = false;
+  error: string = '';
   filterForm!: FormGroup;
-  
-  // Control de vista
-  viewMode: 'grid' | 'list' = 'grid';
-  
-  // Para unsubscribe
+  showConfirmDeleteModal: boolean = false;
+  itemToDelete: Item | null = null;
+  isDeleting: boolean = false;
+  currentUser: any = null;
+  viewMode: string = 'grid';
+
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -65,7 +69,7 @@ export class LibraryComponent implements OnInit, OnDestroy {
       console.log('Items updated:', items, 'Loading:', loading); // Debug log
       this.items = items;
       this.filteredItems = items;
-      this.isLoading = loading;
+      this.loading = loading;
     });
 
     // Cargar datos iniciales
@@ -111,7 +115,7 @@ export class LibraryComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error cargando items:', error);
-        this.isLoading = false; // Asegurar que el loading se detenga en caso de error
+        this.loading = false; // Asegurar que el loading se detenga en caso de error
       }
     });
 
@@ -159,20 +163,47 @@ export class LibraryComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Eliminar item
+   * Mostrar modal de confirmación para eliminar item
    */
   deleteItem(item: Item): void {
-    if (confirm(`¿Estás seguro de que quieres eliminar "${item.title}"?`)) {
-      this.itemService.deleteItem(item.ID).subscribe({
-        next: () => {
-          console.log('Item eliminado exitosamente');
-        },
-        error: (error) => {
-          console.error('Error eliminando item:', error);
-          alert('Error al eliminar el item');
-        }
-      });
-    }
+    this.itemToDelete = item;
+    this.showConfirmDeleteModal = true;
+  }
+
+  /**
+   * Confirmar eliminación del item
+   */
+  confirmDelete(): void {
+    if (!this.itemToDelete) return;
+
+    this.isDeleting = true;
+    this.itemService.deleteItem(this.itemToDelete.ID).subscribe({
+      next: () => {
+        console.log('Item eliminado exitosamente');
+        this.closeConfirmDeleteModal();
+      },
+      error: (error) => {
+        console.error('Error eliminando item:', error);
+        this.isDeleting = false;
+        // El error se mostrará en el modal si es necesario
+      }
+    });
+  }
+
+  /**
+   * Cancelar eliminación
+   */
+  cancelDelete(): void {
+    this.closeConfirmDeleteModal();
+  }
+
+  /**
+   * Cerrar modal de confirmación
+   */
+  private closeConfirmDeleteModal(): void {
+    this.showConfirmDeleteModal = false;
+    this.itemToDelete = null;
+    this.isDeleting = false;
   }
 
   /**
@@ -242,7 +273,7 @@ export class LibraryComponent implements OnInit, OnDestroy {
    */
   forceRefresh(): void {
     console.log('Force refresh clicked');
-    this.isLoading = true;
+    this.loading = true;
     this.itemService.refreshItems();
   }
 }
