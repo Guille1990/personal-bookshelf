@@ -1,0 +1,253 @@
+<div class="edit-item-container">
+  <!-- Header -->
+  <div class="header">
+    <h1>Editar Item</h1>
+    <button type="button" class="btn-secondary" (click)="cancel()">
+      ← Volver a la biblioteca
+    </button>
+  </div>
+
+  <!-- Loading spinner -->
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner"></div>
+    <p>Cargando item...</p>
+  </div>
+
+  <!-- Formulario de edición -->
+  <div *ngIf="!isLoading && currentItem" class="form-container">
+    <form [formGroup]="editForm" (ngSubmit)="onSubmit()" novalidate>
+      
+      <!-- Información básica -->
+      <div class="form-section">
+        <h2>Información básica</h2>
+        
+        <div class="form-group">
+          <label for="title">Título *</label>
+          <input 
+            type="text" 
+            id="title" 
+            formControlName="title"
+            class="form-control"
+            [class.error]="hasError('title', 'required') || hasError('title', 'maxlength')"
+            placeholder="Ingresa el título">
+          <div class="error-message" *ngIf="hasError('title', 'required') || hasError('title', 'maxlength')">
+            {{ getErrorMessage('title') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="author">Autor *</label>
+          <input 
+            type="text" 
+            id="author" 
+            formControlName="author"
+            class="form-control"
+            [class.error]="hasError('author', 'required') || hasError('author', 'maxlength')"
+            placeholder="Ingresa el autor">
+          <div class="error-message" *ngIf="hasError('author', 'required') || hasError('author', 'maxlength')">
+            {{ getErrorMessage('author') }}
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="type">Tipo *</label>
+            <select 
+              id="type" 
+              formControlName="type"
+              class="form-control"
+              [class.error]="hasError('type', 'required')">
+              <option value="">Selecciona un tipo</option>
+              <option *ngFor="let type of itemTypes" [value]="type">{{ type }}</option>
+            </select>
+            <div class="error-message" *ngIf="hasError('type', 'required')">
+              {{ getErrorMessage('type') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="status">Estado *</label>
+            <select 
+              id="status" 
+              formControlName="status"
+              class="form-control"
+              [class.error]="hasError('status', 'required')">
+              <option value="">Selecciona un estado</option>
+              <option *ngFor="let status of itemStatuses" [value]="status">{{ status }}</option>
+            </select>
+            <div class="error-message" *ngIf="hasError('status', 'required')">
+              {{ getErrorMessage('status') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detalles adicionales -->
+      <div class="form-section">
+        <h2>Detalles adicionales</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="genre">Género</label>
+            <input 
+              type="text" 
+              id="genre" 
+              formControlName="genre"
+              class="form-control"
+              [class.error]="hasError('genre', 'maxlength')"
+              placeholder="Ej: Ficción, Romance, Aventura">
+            <div class="error-message" *ngIf="hasError('genre', 'maxlength')">
+              {{ getErrorMessage('genre') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="language">Idioma</label>
+            <input 
+              type="text" 
+              id="language" 
+              formControlName="language"
+              class="form-control"
+              [class.error]="hasError('language', 'maxlength')"
+              placeholder="Ej: Español, Inglés, Japonés">
+            <div class="error-message" *ngIf="hasError('language', 'maxlength')">
+              {{ getErrorMessage('language') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="publication_year">Año de publicación</label>
+            <input 
+              type="text" 
+              id="publication_year" 
+              formControlName="publication_year"
+              class="form-control"
+              [class.error]="hasError('publication_year', 'pattern')"
+              placeholder="Ej: 2023"
+              maxlength="4">
+            <div class="error-message" *ngIf="hasError('publication_year', 'pattern')">
+              {{ getErrorMessage('publication_year') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="rating">Calificación</label>
+            <select 
+              id="rating" 
+              formControlName="rating"
+              class="form-control"
+              [class.error]="hasError('rating', 'min') || hasError('rating', 'max')">
+              <option value="">Sin calificar</option>
+              <option *ngFor="let rating of ratingOptions" [value]="rating">
+                {{ rating }} estrella{{ rating > 1 ? 's' : '' }}
+              </option>
+            </select>
+            <div class="error-message" *ngIf="hasError('rating', 'min') || hasError('rating', 'max')">
+              {{ getErrorMessage('rating') }}
+            </div>
+            
+            <!-- Preview de estrellas -->
+            <div class="rating-preview" *ngIf="editForm.get('rating')?.value">
+              <span class="stars">
+                <span 
+                  *ngFor="let star of getStars(editForm.get('rating')?.value)" 
+                  class="star"
+                  [class.filled]="star === 1">
+                  ★
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="cover_url">URL de la portada</label>
+          <input 
+            type="url" 
+            id="cover_url" 
+            formControlName="cover_url"
+            class="form-control"
+            [class.error]="hasError('cover_url', 'maxlength')"
+            placeholder="https://ejemplo.com/imagen.jpg">
+          <div class="error-message" *ngIf="hasError('cover_url', 'maxlength')">
+            {{ getErrorMessage('cover_url') }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Tags -->
+      <div class="form-section">
+        <h2>Tags</h2>
+        <div class="tags-container">
+          <div class="available-tags">
+            <div class="tags-header">
+              <span>Tags disponibles:</span>
+              <button type="button" class="btn-create-tag" (click)="createNewTag()">
+                + Crear nueva tag
+              </button>
+            </div>
+            <div class="tags-list">
+              <button 
+                *ngFor="let tag of availableTags" 
+                type="button"
+                class="tag-button"
+                [class.selected]="isTagSelected(tag.id)"
+                (click)="toggleTag(tag.id)">
+                {{ tag.name }}
+              </button>
+              <div *ngIf="availableTags.length === 0" class="no-tags">
+                No hay tags disponibles
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notas -->
+      <div class="form-section">
+        <h2>Notas</h2>
+        <div class="form-group">
+          <textarea 
+            id="notes" 
+            formControlName="notes"
+            class="form-control textarea"
+            [class.error]="hasError('notes', 'maxlength')"
+            placeholder="Agrega tus notas, comentarios o reseña personal..."
+            rows="4">
+          </textarea>
+          <div class="error-message" *ngIf="hasError('notes', 'maxlength')">
+            {{ getErrorMessage('notes') }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="form-actions">
+        <button 
+          type="button" 
+          class="btn-secondary" 
+          (click)="cancel()"
+          [disabled]="isSubmitting">
+          Cancelar
+        </button>
+        
+        <button 
+          type="submit" 
+          class="btn-primary"
+          [disabled]="editForm.invalid || isSubmitting">
+          <span *ngIf="isSubmitting" class="spinner-small"></span>
+          {{ isSubmitting ? 'Actualizando...' : 'Actualizar Item' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Error de carga -->
+  <div *ngIf="!isLoading && !currentItem" class="error-container">
+    <h2>Error</h2>
+    <p>No se pudo cargar el item para editar.</p>
+    <button class="btn-primary" (click)="cancel()">Volver a la biblioteca</button>
+  </div>
+</div>

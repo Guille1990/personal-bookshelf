@@ -1,13 +1,17 @@
+// Types
+export type ItemType = 'Libro' | 'Manga';
+export type ItemStatus = 'Leyendo' | 'Terminado' | 'Pendiente';
+
 export interface Item {
-  id: number;
+  ID: number;
   user_id: number;
   title: string;
   author: string;
-  type: 'Libro' | 'Manga';
+  type: ItemType;
   genre: string;
   language: string;
-  publication_year: number;
-  status: 'Leyendo' | 'Terminado' | 'Pendiente';
+  publication_year: string;
+  status: ItemStatus;
   rating: number; // 1-5
   notes: string;
   cover_url: string;
@@ -24,15 +28,15 @@ export interface Tag {
 export interface CreateItemRequest {
   title: string;
   author: string;
-  type: 'Libro' | 'Manga';
-  genre: string;
-  language: string;
-  publication_year: number;
-  status: 'Leyendo' | 'Terminado' | 'Pendiente';
-  rating: number;
-  notes: string;
+  type: ItemType;
+  genre?: string;
+  language?: string;
+  publication_year?: string;
+  status: ItemStatus;
+  rating?: number | null;
+  notes?: string;
   cover_url?: string;
-  tag_ids?: number[];
+  tags_ids?: number[];
 }
 
 export interface UpdateItemRequest extends Partial<CreateItemRequest> {
@@ -50,9 +54,9 @@ export interface ItemsResponse {
 export interface ItemFilters {
   title?: string;
   author?: string;
-  type?: 'Libro' | 'Manga';
+  type?: ItemType;
   genre?: string;
-  status?: 'Leyendo' | 'Terminado' | 'Pendiente';
+  status?: ItemStatus;
   rating?: number;
   tags?: number[];
   page?: number;

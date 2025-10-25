@@ -125,7 +125,7 @@ export class ItemService {
         tap(() => {
           // Actualizar la lista eliminando el item
           const currentItems = this.itemsSubject.value;
-          const updatedItems = currentItems.filter(item => item.id !== id);
+          const updatedItems = currentItems.filter(item => item.ID !== id);
           this.itemsSubject.next(updatedItems);
         })
       );

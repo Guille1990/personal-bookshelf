@@ -22,6 +22,7 @@ type Item struct {
 	Title           string `json:"title"`
 	Author          string `json:"author"`
 	Type            string `json:"type"` // "Libro" o "Manga"
+	Genre           string `json:"genre"`
 	Language        string `json:"language"`
 	PublicationYear string `json:"publication_year"`
 	Status          string `json:"status"` // "Leyendo", "Terminado", "Pendiente"

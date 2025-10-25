@@ -1,0 +1,171 @@
+<div class="add-item-container">
+  <div class="add-item-header">
+    <h1>Agregar Nuevo Item</h1>
+    <button class="btn-secondary" (click)="onCancel()" type="button">
+      ← Volver a Biblioteca
+    </button>
+  </div>
+
+  <div class="add-item-content">
+    <!-- Mensaje de éxito -->
+    <div *ngIf="success" class="alert alert-success">
+      <h3>¡Item agregado exitosamente!</h3>
+      <p>Redirigiendo a la biblioteca...</p>
+    </div>
+
+    <!-- Formulario -->
+    <form *ngIf="!success" [formGroup]="addItemForm" (ngSubmit)="onSubmit()" class="add-item-form">
+      
+      <!-- Información básica -->
+      <div class="form-section">
+        <h2>Información Básica</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="title">Título *</label>
+            <input 
+              type="text" 
+              id="title" 
+              formControlName="title"
+              [class.error]="isFieldInvalid('title')"
+              placeholder="Ingresa el título">
+            <div *ngIf="isFieldInvalid('title')" class="error-message">
+              {{ getFieldError('title') }}
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="author">Autor *</label>
+            <input 
+              type="text" 
+              id="author" 
+              formControlName="author"
+              [class.error]="isFieldInvalid('author')"
+              placeholder="Ingresa el autor">
+            <div *ngIf="isFieldInvalid('author')" class="error-message">
+              {{ getFieldError('author') }}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="type">Tipo *</label>
+            <select id="type" formControlName="type" [class.error]="isFieldInvalid('type')">
+              <option *ngFor="let type of itemTypes" [value]="type.value">
+                {{ type.label }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="genre">Género</label>
+            <input 
+              type="text" 
+              id="genre" 
+              formControlName="genre"
+              placeholder="Ej: Ficción, Romance, Acción">
+          </div>
+        </div>
+      </div>
+
+      <!-- Información de publicación -->
+      <div class="form-section">
+        <h2>Información de Publicación</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="language">Idioma</label>
+            <input 
+              type="text" 
+              id="language" 
+              formControlName="language"
+              placeholder="Español">
+          </div>
+
+          <div class="form-group">
+            <label for="publication_year">Año de Publicación</label>
+            <input 
+              type="text" 
+              id="publication_year" 
+              formControlName="publication_year"
+              [class.error]="isFieldInvalid('publication_year')"
+              placeholder="2024">
+            <div *ngIf="isFieldInvalid('publication_year')" class="error-message">
+              {{ getFieldError('publication_year') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estado y valoración -->
+      <div class="form-section">
+        <h2>Estado y Valoración</h2>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="status">Estado *</label>
+            <select id="status" formControlName="status" [class.error]="isFieldInvalid('status')">
+              <option *ngFor="let status of itemStatuses" [value]="status.value">
+                {{ status.label }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="rating">Calificación (1-5)</label>
+            <select id="rating" formControlName="rating">
+              <option value="">Sin calificar</option>
+              <option *ngFor="let rating of ratings" [value]="rating">
+                {{ rating }} ⭐
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Información adicional -->
+      <div class="form-section">
+        <h2>Información Adicional</h2>
+        
+        <div class="form-group">
+          <label for="cover_url">URL de Portada</label>
+          <input 
+            type="url" 
+            id="cover_url" 
+            formControlName="cover_url"
+            [class.error]="isFieldInvalid('cover_url')"
+            placeholder="https://ejemplo.com/portada.jpg">
+          <div *ngIf="isFieldInvalid('cover_url')" class="error-message">
+            {{ getFieldError('cover_url') }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Notas</label>
+          <textarea 
+            id="notes" 
+            formControlName="notes"
+            rows="4"
+            placeholder="Notas personales sobre este item..."></textarea>
+        </div>
+      </div>
+
+      <!-- Error general -->
+      <div *ngIf="error" class="alert alert-error">
+        {{ error }}
+      </div>
+
+      <!-- Botones -->
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" (click)="onCancel()" [disabled]="loading">
+          Cancelar
+        </button>
+        <button type="submit" class="btn-primary" [disabled]="loading || addItemForm.invalid">
+          <span *ngIf="loading">Guardando...</span>
+          <span *ngIf="!loading">Agregar Item</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

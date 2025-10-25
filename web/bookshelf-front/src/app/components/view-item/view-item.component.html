@@ -1,0 +1,122 @@
+<div class="view-item-container">
+  <!-- Loading spinner -->
+  <div *ngIf="isLoading" class="loading">
+    <div class="spinner"></div>
+    <p>Cargando item...</p>
+  </div>
+
+  <!-- Item details -->
+  <div *ngIf="!isLoading && currentItem" class="item-details">
+    <!-- Header -->
+    <div class="header">
+      <button type="button" class="btn-back" (click)="goBack()">
+        ← Volver a la biblioteca
+      </button>
+      <div class="header-actions">
+        <button class="btn-edit" (click)="editItem()">
+          ✏️ Editar
+        </button>
+        <button class="btn-delete" (click)="deleteItem()">
+          🗑️ Eliminar
+        </button>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="content">
+      <!-- Cover and basic info -->
+      <div class="main-info">
+        <div class="cover-section">
+          <div class="cover-container">
+            <img *ngIf="currentItem.cover_url" 
+                 [src]="currentItem.cover_url" 
+                 [alt]="currentItem.title" 
+                 class="cover-image">
+            <div *ngIf="!currentItem.cover_url" class="cover-placeholder">
+              <span class="cover-icon">{{ currentItem.type === 'Libro' ? '📖' : '📚' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <h1 class="title">{{ currentItem.title }}</h1>
+          <h2 class="author">por {{ currentItem.author }}</h2>
+
+          <!-- Type and Status badges -->
+          <div class="badges">
+            <span class="badge type-badge" [style.background-color]="getTypeColor(currentItem.type)">
+              {{ currentItem.type }}
+            </span>
+            <span class="badge status-badge" [style.background-color]="getStatusColor(currentItem.status)">
+              {{ currentItem.status }}
+            </span>
+          </div>
+
+          <!-- Rating -->
+          <div class="rating-section" *ngIf="currentItem.rating > 0">
+            <h3>Calificación</h3>
+            <div class="rating">
+              <span *ngFor="let star of getStars(currentItem.rating)" 
+                    class="star" 
+                    [class.filled]="star === 1">★</span>
+              <span class="rating-text">({{ currentItem.rating }}/5)</span>
+            </div>
+          </div>
+
+          <!-- Tags -->
+          <div class="tags-section" *ngIf="currentItem.tags && currentItem.tags.length > 0">
+            <h3>Tags</h3>
+            <div class="tags-list">
+              <span *ngFor="let tag of currentItem.tags" class="tag">
+                {{ tag.name }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional details -->
+      <div class="details-grid">
+        <div class="detail-item" *ngIf="currentItem.genre">
+          <label>Género</label>
+          <span>{{ currentItem.genre }}</span>
+        </div>
+
+        <div class="detail-item" *ngIf="currentItem.language">
+          <label>Idioma</label>
+          <span>{{ currentItem.language }}</span>
+        </div>
+
+        <div class="detail-item" *ngIf="currentItem.publication_year">
+          <label>Año de publicación</label>
+          <span>{{ currentItem.publication_year }}</span>
+        </div>
+
+        <div class="detail-item">
+          <label>Agregado</label>
+          <span>{{ formatDate(currentItem.created_at) }}</span>
+        </div>
+
+        <div class="detail-item" *ngIf="currentItem.updated_at">
+          <label>Última actualización</label>
+          <span>{{ formatDate(currentItem.updated_at) }}</span>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="notes-section" *ngIf="hasNotes()">
+        <h3>Notas</h3>
+        <div class="notes-content">
+          <p>{{ currentItem.notes }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="!isLoading && !currentItem" class="error-container">
+    <h2>Error</h2>
+    <p>No se pudo cargar el item.</p>
+    <button class="btn-primary" (click)="goBack()">Volver a la biblioteca</button>
+  </div>
+</div>

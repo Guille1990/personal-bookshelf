@@ -163,7 +163,7 @@ export class LibraryComponent implements OnInit, OnDestroy {
    */
   deleteItem(item: Item): void {
     if (confirm(`¿Estás seguro de que quieres eliminar "${item.title}"?`)) {
-      this.itemService.deleteItem(item.id).subscribe({
+      this.itemService.deleteItem(item.ID).subscribe({
         next: () => {
           console.log('Item eliminado exitosamente');
         },
@@ -176,24 +176,24 @@ export class LibraryComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Ir a agregar nuevo item
+   * Agregar nuevo item
    */
   addNewItem(): void {
-    this.router.navigate(['/library/add']);
+    this.router.navigate(['/add-item']);
   }
 
   /**
    * Ir a editar item
    */
   editItem(item: Item): void {
-    this.router.navigate(['/library/edit', item.id]);
+    this.router.navigate(['/library/edit', item.ID]);
   }
 
   /**
    * Ver detalles del item
    */
   viewItem(item: Item): void {
-    this.router.navigate(['/library/view', item.id]);
+    this.router.navigate(['/library/view', item.ID]);
   }
 
   /**

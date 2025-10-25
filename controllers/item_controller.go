@@ -2,17 +2,19 @@ package controllers
 
 import (
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/Guille1990/personal-bookshelf/config"
 	"github.com/Guille1990/personal-bookshelf/models"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"strings"
 )
 
 type itemInput struct {
 	Title           string `json:"title"`
 	Author          string `json:"author"`
 	Type            string `json:"type"` // "Libro" o "Manga"
+	Genre           string `json:"genre"`
 	Language        string `json:"language"`
 	PublicationYear string `json:"publication_year"`
 	Status          string `json:"status"` // "Leyendo", "Terminado", "Pendiente"
@@ -28,7 +30,7 @@ func CreateItem(c *gin.Context) {
 	var input models.Item
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Datos inválidos"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Datos inválidos", "details": err.Error()})
 		return
 	}
 
@@ -135,7 +137,7 @@ func UpdateItems(c *gin.Context) {
 	itemID := c.Param("id")
 
 	var item models.Item
-	if err := config.DB.Where("id = ? AND user_id = ?", itemID, userID).First(&item).Error; err != nil {
+	if err := config.DB.Preload("Tags").Where("id = ? AND user_id = ?", itemID, userID).First(&item).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Ítem no encontrado"})
 		return
 	}
@@ -148,17 +150,35 @@ func UpdateItems(c *gin.Context) {
 
 	updates := validateItemInput(input)
 
-	config.DB.Model(&item).Updates(updates)
+	if err := config.DB.Model(&item).Updates(updates).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al actualizar el ítem", "details": err.Error()})
+		return
+	}
 
-	var tags []models.Tag
+	// Actualizar tags si se proporcionaron
 	if len(input.TagsIDs) > 0 {
+		var tags []models.Tag
 		if err := config.DB.Where("id IN ?", input.TagsIDs).Find(&tags).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al asociar las etiquetas", "details": err.Error()})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al encontrar las etiquetas", "details": err.Error()})
 			return
 		}
 
-		config.DB.Model(&item).Association("Tags").Clear()
-		config.DB.Model(&item).Association("Tags").Replace(&tags)
+		if err := config.DB.Model(&item).Association("Tags").Replace(&tags); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al asociar las etiquetas", "details": err.Error()})
+			return
+		}
+	} else if input.TagsIDs != nil && len(input.TagsIDs) == 0 {
+		// Si se envía un array vacío, limpiar las tags
+		if err := config.DB.Model(&item).Association("Tags").Clear(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al limpiar las etiquetas", "details": err.Error()})
+			return
+		}
+	}
+
+	// Recargar el item con las tags actualizadas
+	if err := config.DB.Preload("Tags").Where("id = ?", item.ID).First(&item).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al recargar el ítem", "details": err.Error()})
+		return
 	}
 
 	c.JSON(http.StatusOK, item)
@@ -190,6 +210,9 @@ func validateItemInput(input itemInput) map[string]interface{} {
 	}
 	if input.Type != "" {
 		updates["type"] = input.Type
+	}
+	if input.Genre != "" {
+		updates["genre"] = input.Genre
 	}
 	if input.Language != "" {
 		updates["language"] = input.Language
