@@ -8,31 +8,36 @@ import (
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
-
 	r.Use(middleware.StaticFiles())
+
+	authController := &controllers.AuthController{}
+	itemController := &controllers.ItemController{}
+	tagController := &controllers.TagController{}
 
 	api := r.Group("/api")
 	{
-		api.POST("/register", controllers.Register)
-		api.POST("/login", controllers.Login)
+		api.POST("/register", authController.Register)
+		api.POST("/login", authController.Login)
+		api.POST("/refresh", authController.RefreshToken)
+		api.POST("/logout", middleware.AuthMiddleware(), authController.Logout)
 
 		authItem := api.Group("/items")
 		authItem.Use(middleware.AuthMiddleware())
 		{
-			authItem.POST("/", controllers.CreateItem)
-			authItem.GET("/", controllers.GetItems)
-			authItem.GET("/:id", controllers.GetItemByID)
-			authItem.PUT("/:id", controllers.UpdateItems)
-			authItem.DELETE("/:id", controllers.DeleteItems)
-			authItem.GET("/filter", controllers.FilterItemsByTags)
+			authItem.POST("/", itemController.CreateItem)
+			authItem.GET("/", itemController.GetItems)
+			authItem.GET("/:id", itemController.GetItemByID)
+			authItem.PUT("/:id", itemController.UpdateItems)
+			authItem.DELETE("/:id", itemController.DeleteItems)
+			authItem.GET("/filter", itemController.FilterItemsByTags)
 		}
 
 		authTag := api.Group("/tags")
 		authTag.Use(middleware.AuthMiddleware())
 		{
-			authTag.POST("/", controllers.CreateTag)
-			authTag.GET("/", controllers.GetTags)
-			authTag.GET("/:id/items", controllers.GetItemsByTag)
+			authTag.POST("/", tagController.CreateTag)
+			authTag.GET("/", tagController.GetTags)
+			authTag.GET("/:id/items", itemController.GetItemsByTag)
 		}
 	}
 

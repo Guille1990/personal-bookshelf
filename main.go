@@ -8,7 +8,14 @@ import (
 
 func main() {
 	config.ConnectDatabase()
-	config.DB.AutoMigrate(&models.User{}, &models.Item{}, &models.Tag{}, &models.ItemTags{})
+	config.DB.AutoMigrate(
+		&models.User{},
+		&models.Item{},
+		&models.Tag{},
+		&models.ItemTags{},
+		&models.RefreshToken{},
+		&models.TokenBlacklist{},
+	)
 
 	r := routes.SetupRouter()
 	r.Run(":8080")

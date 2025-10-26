@@ -10,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type ItemController struct{}
+
 type itemInput struct {
 	Title           string `json:"title"`
 	Author          string `json:"author"`
@@ -24,7 +26,7 @@ type itemInput struct {
 	TagsIDs         []uint `json:"tags_ids"`
 }
 
-func CreateItem(c *gin.Context) {
+func (ic *ItemController) CreateItem(c *gin.Context) {
 	userID := c.MustGet("user_id").(uint)
 
 	var input models.Item
@@ -57,7 +59,7 @@ func CreateItem(c *gin.Context) {
 	c.JSON(http.StatusCreated, input)
 }
 
-func GetItems(c *gin.Context) {
+func (ic *ItemController) GetItems(c *gin.Context) {
 	userID := c.MustGet("user_id").(uint)
 
 	var items []models.Item
@@ -69,7 +71,7 @@ func GetItems(c *gin.Context) {
 	c.JSON(http.StatusOK, items)
 }
 
-func GetItemByID(c *gin.Context) {
+func (ic *ItemController) GetItemByID(c *gin.Context) {
 	userID := c.MustGet("user_id").(uint)
 	id := c.Param("id")
 
@@ -82,7 +84,7 @@ func GetItemByID(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
-func GetItemsByTag(c *gin.Context) {
+func (ic *ItemController) GetItemsByTag(c *gin.Context) {
 	userID := c.MustGet("user_id").(uint)
 	tagID := c.Param("id")
 	fmt.Println("Tag ID============================================:", tagID)
@@ -102,7 +104,7 @@ func GetItemsByTag(c *gin.Context) {
 	c.JSON(http.StatusOK, items)
 }
 
-func FilterItemsByTags(c *gin.Context) {
+func (ic *ItemController) FilterItemsByTags(c *gin.Context) {
 	userID := c.MustGet("user_id").(uint)
 	tagsIDs := strings.Split(c.Query("tags"), ",")
 	mode := c.DefaultQuery("mode", "or")
@@ -132,7 +134,7 @@ func FilterItemsByTags(c *gin.Context) {
 	c.JSON(http.StatusOK, items)
 }
 
-func UpdateItems(c *gin.Context) {
+func (ic *ItemController) UpdateItems(c *gin.Context) {
 	userID := c.MustGet("user_id").(uint)
 	itemID := c.Param("id")
 
@@ -150,13 +152,19 @@ func UpdateItems(c *gin.Context) {
 
 	updates := validateItemInput(input)
 
-	if err := config.DB.Model(&item).Updates(updates).Error; err != nil {
+	if err := config.DB.Model(&item).Omit("Tags").Updates(updates).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al actualizar el ítem", "details": err.Error()})
 		return
 	}
 
 	// Actualizar tags si se proporcionaron
 	if len(input.TagsIDs) > 0 {
+		fmt.Println("Actualizando etiquetas...")
+		if err := config.DB.Model(&item).Association("Tags").Clear(); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al limpiar las etiquetas", "details": err.Error()})
+			return
+		}
+
 		var tags []models.Tag
 		if err := config.DB.Where("id IN ?", input.TagsIDs).Find(&tags).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al encontrar las etiquetas", "details": err.Error()})
@@ -168,6 +176,7 @@ func UpdateItems(c *gin.Context) {
 			return
 		}
 	} else if input.TagsIDs != nil && len(input.TagsIDs) == 0 {
+		fmt.Println("Limpiando etiquetas...")
 		// Si se envía un array vacío, limpiar las tags
 		if err := config.DB.Model(&item).Association("Tags").Clear(); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al limpiar las etiquetas", "details": err.Error()})
@@ -184,7 +193,7 @@ func UpdateItems(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
-func DeleteItems(c *gin.Context) {
+func (ic *ItemController) DeleteItems(c *gin.Context) {
 	userID := c.MustGet("user_id").(uint)
 	id := c.Param("id")
 

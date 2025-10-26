@@ -7,7 +7,9 @@ import (
 	"net/http"
 )
 
-func CreateTag(c *gin.Context) {
+type TagController struct{}
+
+func (tc *TagController) CreateTag(c *gin.Context) {
 	var tag models.Tag
 	if err := c.ShouldBindJSON(&tag); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Datos inválidos"})
@@ -22,7 +24,7 @@ func CreateTag(c *gin.Context) {
 	c.JSON(http.StatusCreated, tag)
 }
 
-func GetTags(c *gin.Context) {
+func (tc *TagController) GetTags(c *gin.Context) {
 	var tags []models.Tag
 	if err := config.DB.Find(&tags).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al obtener las etiquetas"})
