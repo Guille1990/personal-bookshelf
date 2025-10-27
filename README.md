@@ -1,4 +1,8 @@
-# Modelo de datos
+# PERSONAL BOOKSHELF
+
+Una aplicación para gestionar tu colección personal de libros y mangas.
+
+## Modelo de datos
 
 ```mermaid
 classDiagram
@@ -77,21 +81,51 @@ classDiagram
     RefreshToken --> User : pertenece_a
 ```
 
-## Características del modelo actualizado
+## Como correr la aplicación
 
-### 🔐 Seguridad mejorada
-- **Control de acceso**: Sistema de bloqueo temporal de cuentas
-- **Refresh tokens**: Gestión segura de sesiones prolongadas  
-- **Token blacklisting**: Revocación explícita de tokens
-- **Rate limiting**: Protección contra ataques de fuerza bruta
+Para correr la aplicación mediante Docker, sigue estos pasos:
 
-### 📊 Estructura de datos
-- **Soft deletes**: Eliminación lógica con `DeletedAt`
-- **Timestamps automáticos**: `CreatedAt`, `UpdatedAt` en todas las entidades
-- **Relaciones GORM**: Asociaciones many-to-many optimizadas
-- **Campos de seguridad**: Seguimiento de intentos fallidos y bloqueos
+1. Asegúrate de tener Docker y Docker Compose instalados en tu máquina.
+2. Clona este repositorio en tu máquina local.
+3. Navega al directorio del proyecto.
+4. Ejecuta el siguiente comando para construir y correr los contenedores:
 
-### 🏷️ Sistema de etiquetado
-- **Tags flexibles**: Sistema de etiquetado many-to-many
-- **Asociaciones GORM**: Manejo automático de relaciones
-- **Prevención de duplicados**: Lógica mejorada para evitar tags duplicadas
+   ```bash
+   docker-compose up --build
+   ```
+5. La aplicación estará disponible en `http://localhost:8080`.
+6. Para registrar un nuevo usuario, envía una solicitud POST a `http://localhost:8080/api/register` con los datos necesarios.
+
+    ```bash
+    curl --request POST \
+        --url http://localhost:8080/api/register \
+        --header 'Content-Type: application/json' \
+        --data '{
+            "email": "user@gmail.com",
+            "password": "MiPassword123!",
+            "name": "User User"
+        }'
+    ```
+7. Inicia sesión en la aplicación web con las credenciales que acabas de crear.
+
+## Documentación de la API
+
+Para ver la documentación completa de la API, revisa el siguiente documento: [API Documentation](API_DOCUMENTATION.md)
+
+## Tecnologías utilizadas
+
+- Go
+- Gin Gonic
+- GORM
+- sqlite
+
+## Pendientes de implementar 
+
+- Uso del token de refresco para renovar tokens JWT desde la aplicación web.
+- Implementar tests unitarios y de integración.
+- Mejorar la validación de datos de entrada.
+- Añadir paginación y filtros a los endpoints de la API.
+- Refactor de app hacia arquitectura hexagonal.
+
+
+
