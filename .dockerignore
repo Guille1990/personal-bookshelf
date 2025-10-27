@@ -1,0 +1,57 @@
+# Git
+.git
+.gitignore
+
+# Docker files
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Scripts
+scripts/
+
+# Angular source (conservamos dist/)
+web/bookshelf-front/src/
+web/bookshelf-front/node_modules/
+web/bookshelf-front/package*.json
+web/bookshelf-front/angular.json
+web/bookshelf-front/tsconfig*.json
+web/bookshelf-front/.angular/
+
+# Go binaries locales
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+tmp/
+main
+__debug_bin*
+
+# IDEs
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database files locales
+*.db
+*.sqlite
+
+# Environment
+.env*
+
+# Coverage
+coverage.html
+
+# Build artifacts temporales
+build/

@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # Aplicación Personal Bookshelf
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bookshelf-app
+    ports:
+      - "8080:8080"
+    volumes:
+      - app_data:/app/data
+    environment:
+      - GIN_MODE=release
+      - PORT=8080
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  app_data:
+    driver: local
