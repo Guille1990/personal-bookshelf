@@ -1,7 +1,7 @@
 # ===============================
 # Etapa 1: Construcción Backend
 # ===============================
-FROM golang:1.21-alpine AS backend-builder
+FROM golang:1.25-alpine AS backend-builder
 
 # Instalar dependencias del sistema necesarias
 RUN apk add --no-cache \
