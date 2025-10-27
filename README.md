@@ -126,6 +126,7 @@ Para ver la documentación completa de la API, revisa el siguiente documento: [A
 - Mejorar la validación de datos de entrada.
 - Añadir paginación y filtros a los endpoints de la API.
 - Refactor de app hacia arquitectura hexagonal.
+- Implementar la gestión de tags en la aplicación web.
 
 
 
