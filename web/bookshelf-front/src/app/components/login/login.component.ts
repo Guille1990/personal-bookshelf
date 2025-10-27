@@ -24,15 +24,6 @@ export class LoginComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // Verificar si el usuario ya está autenticado
-    this.authService.isAuthenticated$.subscribe(isAuth => {
-      this.isAuthenticated = isAuth;
-      if (isAuth) {
-        // Si ya está autenticado, redirigir al dashboard
-        this.router.navigate(['/dashboard']);
-      }
-    });
-
     // Crear formulario
     this.loginForm = this.fb.group({
       username: ['', [Validators.required, Validators.minLength(3)]],
@@ -56,7 +47,7 @@ export class LoginComponent implements OnInit {
       this.authService.login(credentials).subscribe({
         next: (response) => {
           console.log('Login exitoso:', response);
-          // La redirección se maneja automáticamente en ngOnInit
+          this.router.navigate(['/library']);
         },
         error: (error) => {
           console.error('Error de login:', error);

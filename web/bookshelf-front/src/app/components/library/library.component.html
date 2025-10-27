@@ -3,11 +3,9 @@
   <header class="library-header">
     <div class="header-left">
       <h1>Mi Biblioteca</h1>
-      <p *ngIf="currentUser">Bienvenido, {{ currentUser.username }}</p>
     </div>
     <div class="header-right">
       <button class="btn-secondary" (click)="forceRefresh()">🔄 Refresh</button>
-      <button class="btn-secondary" (click)="goToDashboard()">Dashboard</button>
       <button class="btn-danger" (click)="logout()">Cerrar Sesión</button>
     </div>
   </header>
@@ -130,13 +128,13 @@
             <div class="item-status" [style.background-color]="getStatusColor(item.status)">{{ item.status }}</div>
           </div>
         </div>
-        
+
         <div class="item-info">
           <h3 class="item-title" (click)="viewItem(item)">{{ item.title }}</h3>
           <p class="item-author">{{ item.author }}</p>
           <div class="item-rating">
-            <span *ngFor="let star of getStars(item.rating)" 
-                  class="star" 
+            <span *ngFor="let star of getStars(item.rating)"
+                  class="star"
                   [class.filled]="star === 1">★</span>
           </div>
           <p class="item-genre">{{ item.genre }} • {{ item.publication_year }}</p>
@@ -160,7 +158,7 @@
         <div class="col-rating">Rating</div>
         <div class="col-actions">Acciones</div>
       </div>
-      
+
       <div *ngFor="let item of filteredItems" class="list-item" (click)="viewItem(item)">
         <div class="col-cover">
           <img *ngIf="item.cover_url" [src]="item.cover_url" [alt]="item.title" class="list-cover">
@@ -180,8 +178,8 @@
           <span class="status-badge" [style.background-color]="getStatusColor(item.status)">{{ item.status }}</span>
         </div>
         <div class="col-rating">
-          <span *ngFor="let star of getStars(item.rating)" 
-                class="star small" 
+          <span *ngFor="let star of getStars(item.rating)"
+                class="star small"
                 [class.filled]="star === 1">★</span>
         </div>
         <div class="col-actions" (click)="$event.stopPropagation()">

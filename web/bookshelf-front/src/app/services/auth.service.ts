@@ -3,12 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 
 interface LoginResponse {
-  token: string;
-  user: {
-    id: number;
-    username: string;
-    email: string;
-  };
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+  token_type: string;
+}
+
+interface LogoutResponse {
+  message: string;
 }
 
 interface User {
@@ -23,14 +25,13 @@ interface User {
 export class AuthService {
   private baseUrl = '/api';
   private tokenKey = 'personal_bookshelf_auth_token';
+  private refreshTokenKey = 'personal_bookshelf_refresh_token';
   private userKey = 'personal_bookshelf_user_data';
 
   // BehaviorSubject para manejar el estado de autenticación
   private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
-  private currentUserSubject = new BehaviorSubject<User | null>(this.getCurrentUser());
 
   public isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
-  public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient) {
     // Verificar token al inicializar el servicio
@@ -44,10 +45,9 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.baseUrl}/login`, credentials)
       .pipe(
         tap((response: LoginResponse) => {
-          this.setToken(response.token);
-          this.setUser(response.user);
+          this.setToken(response.access_token);
+          this.setRefreshToken(response.refresh_token);
           this.isAuthenticatedSubject.next(true);
-          this.currentUserSubject.next(response.user);
         })
       );
   }
@@ -62,11 +62,15 @@ export class AuthService {
   /**
    * Realizar logout
    */
-  logout(): void {
-    this.removeToken();
-    this.removeUser();
-    this.isAuthenticatedSubject.next(false);
-    this.currentUserSubject.next(null);
+  logout(): Observable<LogoutResponse> {
+    return this.http.post<LogoutResponse>(`${this.baseUrl}/logout`, {})
+      .pipe(
+        tap(response => {
+          this.removeToken();
+          console.log(`message: ${response.message}`);
+          this.isAuthenticatedSubject.next(false);
+        })
+      );
   }
 
   /**
@@ -86,23 +90,6 @@ export class AuthService {
       console.warn('Error accessing localStorage for token:', error);
       return null;
     }
-  }
-
-  /**
-   * Obtener usuario actual
-   */
-  getCurrentUser(): User | null {
-    try {
-      const userStr = localStorage.getItem(this.userKey);
-      if (userStr && userStr !== 'undefined' && userStr !== 'null') {
-        return JSON.parse(userStr);
-      }
-    } catch (error) {
-      console.warn('Error parsing user from localStorage:', error);
-      // Limpiar datos corruptos
-      this.removeUser();
-    }
-    return null;
   }
 
   /**
@@ -129,14 +116,11 @@ export class AuthService {
     }
   }
 
-  /**
-   * Guardar usuario
-   */
-  private setUser(user: User): void {
+  private setRefreshToken(refreshToken: string): void {
     try {
-      localStorage.setItem(this.userKey, JSON.stringify(user));
+      localStorage.setItem(this.refreshTokenKey, refreshToken);
     } catch (error) {
-      console.error('Error saving user to localStorage:', error);
+      console.error('Error saving refresh token to localStorage:', error);
     }
   }
 
@@ -148,17 +132,6 @@ export class AuthService {
       localStorage.removeItem(this.tokenKey);
     } catch (error) {
       console.warn('Error removing token from localStorage:', error);
-    }
-  }
-
-  /**
-   * Eliminar usuario
-   */
-  private removeUser(): void {
-    try {
-      localStorage.removeItem(this.userKey);
-    } catch (error) {
-      console.warn('Error removing user from localStorage:', error);
     }
   }
 

@@ -40,7 +40,7 @@ export class LibraryComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private fb: FormBuilder,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Verificar autenticación
@@ -48,14 +48,6 @@ export class LibraryComponent implements OnInit, OnDestroy {
       this.router.navigate(['/login']);
       return;
     }
-
-    // Obtener usuario actual
-    this.authService.currentUser$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(user => {
-        this.currentUser = user;
-      });
-
     // Inicializar formulario de filtros
     this.initFilterForm();
 
@@ -64,13 +56,13 @@ export class LibraryComponent implements OnInit, OnDestroy {
       this.itemService.items$,
       this.itemService.loading$
     ])
-    .pipe(takeUntil(this.destroy$))
-    .subscribe(([items, loading]) => {
-      console.log('Items updated:', items, 'Loading:', loading); // Debug log
-      this.items = items;
-      this.filteredItems = items;
-      this.loading = loading;
-    });
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([items, loading]) => {
+        console.log('Items updated:', items, 'Loading:', loading); // Debug log
+        this.items = items;
+        this.filteredItems = items;
+        this.loading = loading;
+      });
 
     // Cargar datos iniciales
     this.loadData();
@@ -107,7 +99,7 @@ export class LibraryComponent implements OnInit, OnDestroy {
    */
   private loadData(): void {
     console.log('Loading data...'); // Debug log
-    
+
     this.itemService.getItems().subscribe({
       next: (items) => {
         console.log('Items loaded:', items); // Debug log
@@ -135,7 +127,7 @@ export class LibraryComponent implements OnInit, OnDestroy {
    */
   private applyFilters(): void {
     const filters = this.filterForm.value;
-    
+
     this.filteredItems = this.items.filter(item => {
       return (
         (!filters.title || item.title.toLowerCase().includes(filters.title.toLowerCase())) &&
@@ -254,18 +246,13 @@ export class LibraryComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Ir al dashboard
-   */
-  goToDashboard(): void {
-    this.router.navigate(['/dashboard']);
-  }
-
-  /**
    * Logout
    */
   logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
+    this.authService.logout()
+      .subscribe(() => {
+        this.router.navigate(['/login']);
+      });
   }
 
   /**
